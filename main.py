@@ -1,1 +1,1 @@
-#This module manages UI
+# This module manages UI and parallelisation
