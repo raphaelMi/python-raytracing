@@ -58,7 +58,7 @@ class Ray:
                     if nearest_dist > t > 0:
                         nearest_dist = t
                         nearest_prim = prim
-        if nearest_dist > 0: # no intersection
+        if nearest_dist > 0:  # no intersection
             return
 
         nearest_point = nearest_dist*self.vector + self.point
@@ -73,6 +73,7 @@ class Ray:
 
     def evaluate(self, scene, recursion_depth):
         # evaluates chromaticity and brightness of a given ray recursively for a set depth of recursion
+        # [1.0, 1.0, 1.0] is white
         try:
             prim, coord, length, normal = self.intersect(scene)
         except ValueError:
@@ -85,19 +86,37 @@ class Ray:
 
         if recursion_depth > MAX_RECURSION_DEPTH:
             # rays die after exceeding depth of recursion
-            return [0, 0, 0], 0.0
+            return [0.0, 0.0, 0.0]
 
-        light_source_intesity = 0
+        lights_source = []
 
         for light_prim in scene.lights:
-            pass
+            light_point = [0, 0, 0]
+            if light_prim.kind == "SPHERE":
+                light_point = light_prim.points[0]
+            elif light_prim.kind == "TRIANGLE":
+                light_point = sum(light_prim.points)/3
+
+            light_vector = light_point - coord
+            c = Ray(coord, light_vector).evaluate(scene, 1)
+            c = c*np.dot(normal, light_vector)/(np.linalg.norm(light_vector)*np.linalg.norm(normal))
+            # intensity has to be scaled down relative to the angle
+
+            lights_source.append(c)
+
+        result_lights = [sum(lights_source)[k]*prim.color[k] for k in range(3)]
+
+        return result_lights
+
+
+
 
         # if prim.shininess == 0.0:
         #    pass
 
         # TODO
         # depending on the texture of the primitive, calculate more rays and combine result
-        # light_reflection = Ray(coords, self.vector - 2*np.dot(self.vector,prim.normal)*prim.normal)
+        # light_reflection = Ray(coords, self.vector - 2*np.dot(self.vector,normal)*normal)
         #                       .evaluate(scene,recursion_depth+1)
         # light_source = Ray(coords, scene.light.coords - coords).eval...
         # light_diffuse = ...
@@ -115,7 +134,7 @@ def render_scene(scene, config):
     # iterates through all pixels in viewport, traces rays and draws to bitmap
 
     for ray, pixel in ray_iterator(scene.get_camera, 0, 1):
-        color, intensity = ray.evaluate(scene, 0)
+        color = ray.evaluate(scene, 0)
 
 
 
