@@ -2,10 +2,10 @@
 
 
 import numpy as np
-import geometry
+from geometry import *
 
 
-MAX_RECURSION_DEPTH = 4
+MAX_RECURSION_DEPTH = 0
 BACKGROUND_COLOR = [0, 0, 0]
 
 
@@ -13,13 +13,10 @@ class Ray:
     # ray has information about
     def __init__(self, point, vector):
         self.point = point
-        self.vector = vector
+        self.vector = vector*(1/np.linalg.norm(vector))
 
     def intersect(self, scene):
         # calculate the earliest intersection with a primitive of the scene
-        if np.linalg.norm(self.vector) == 0:
-            print("Rays must have valid direction")
-            return
 
         nearest_dist = -1
         nearest_prim = 0
@@ -35,9 +32,9 @@ class Ray:
                 b = np.dot(origin_center, self.vector)
                 c = np.linalg.norm(origin_center)**2 - prim.radius**2
                 h = b**2 - c
-                if h >= 0.0: # TODO check if this algorithm fails when ray origin is inside sphere
+                if h >= 0.0:  # TODO check if this algorithm fails when ray origin is inside sphere
                     h = np.sqrt(h)
-                    if nearest_dist > -b - h >= 0:
+                    if nearest_dist > -b - h > 0:  # TODO check if isClose is needed
                         nearest_dist = -b - h
                         nearest_prim = prim
 
@@ -57,19 +54,27 @@ class Ray:
                 v = d * np.dot(q, v0v1)
                 t = d * np.dot(-n, rov0)
 
-                if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (u + v) <= 1.0 :
-                    if nearest_dist > t >= 0:
+                if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (u + v) <= 1.0:
+                    if nearest_dist > t > 0:
                         nearest_dist = t
                         nearest_prim = prim
-            # TODO calculate intersection point based on nearest prim
-        return
-        # TODO
-        # return primitive,coordinates,length
+        if nearest_dist > 0: # no intersection
+            return
+
+        nearest_point = nearest_dist*self.vector + self.point
+        normal = [0, 0, 0]
+        if nearest_prim.kind == "SPHERE":
+            normal = nearest_point - nearest_prim.points[0]
+            normal = normal * (1/np.linalg.norm(normal))
+        elif nearest_prim.kind == "TRIANGLE":
+            normal = nearest_prim.normal
+
+        return nearest_prim, nearest_point, nearest_dist, normal
 
     def evaluate(self, scene, recursion_depth):
         # evaluates chromaticity and brightness of a given ray recursively for a set depth of recursion
         try:
-            prim, coord, length = self.intersect(scene)
+            prim, coord, length, normal = self.intersect(scene)
         except ValueError:
             # if ray did not make any intersection, return
             return BACKGROUND_COLOR, 0
@@ -82,8 +87,13 @@ class Ray:
             # rays die after exceeding depth of recursion
             return [0, 0, 0], 0.0
 
-        if prim.shininess == 0.0:
+        light_source_intesity = 0
+
+        for light_prim in scene.lights:
             pass
+
+        # if prim.shininess == 0.0:
+        #    pass
 
         # TODO
         # depending on the texture of the primitive, calculate more rays and combine result
@@ -105,7 +115,7 @@ def render_scene(scene, config):
     # iterates through all pixels in viewport, traces rays and draws to bitmap
 
     for ray, pixel in ray_iterator(scene.get_camera, 0, 1):
-        color, intensity = ray.evaluate(ray, scene, 0)
+        color, intensity = ray.evaluate(scene, 0)
 
 
 

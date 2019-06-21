@@ -12,12 +12,10 @@ class Primitive:
             self.points = [point_a]
             self.radius = radius
         elif radius == 0:
-            if point_b == point_c:
-                self.kind = "POINT"
-                self.points = [point_a]
-            else:
-                self.kind = "TRIANGLE"
-                self.points = [point_a, point_b, point_c]
+            self.kind = "TRIANGLE"
+            self.points = [point_a, point_b, point_c]
+            n = np.cross(point_b - point_a, point_c - point_a)
+            self.normal = n*(1/np.linalg.norm(n))
 
         self.color = [255, 255, 255]
         self.shininess = 0
