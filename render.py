@@ -20,6 +20,29 @@ class Ray:
         if np.linalg.norm(self.vector) == 0:
             print("Rays must have valid direction")
             return
+
+        nearest_dist = -1
+        nearest_prim = 0
+        nearest_point = (0,0,0)
+
+        for prim in scene.primitives:
+            # we use intersection testing algorithms from
+            # http://www.iquilezles.org/www/articles/intersectors/intersectors.htm
+
+            if prim.kind == "SPHERE":
+
+                origin_center = self.point - prim.points[0]
+                b = np.dot(origin_center, self.vector)
+                c = np.linalg.norm(origin_center)**2 - prim.radius**2
+                h = b**2 - c
+                if h >= 0.0: # TODO check if this algorithm fails when ray origin is inside sphere
+                    h = np.sqrt(h)
+                    if nearest_dist > -b - h >= 0:
+                        nearest_dist = -b - h
+                        nearest_prim = prim
+            elif prim.kind == "TRIANGLE":
+                pass
+
         return geometry.Primitive(), (0, 0, 0), 1.0
         # TODO
         # return primitive,coordinates,length

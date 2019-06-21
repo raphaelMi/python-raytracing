@@ -11,3 +11,5 @@ Implement intersection tests
 Work out implementation of Snell's law and Fresnel equations
 
 Everything else
+
+Add Bounding Volumes for quicker Iteration
