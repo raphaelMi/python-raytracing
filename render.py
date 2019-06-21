@@ -20,7 +20,7 @@ class Ray:
 
         nearest_dist = -1
         nearest_prim = 0
-        nearest_point = (0, 0, 0)
+        nearest_point = [0, 0, 0]
 
         for prim in scene.primitives:
             # we use intersection testing algorithms from
@@ -58,7 +58,7 @@ class Ray:
                     if nearest_dist > t > 0:
                         nearest_dist = t
                         nearest_prim = prim
-        if nearest_dist > 0:  # no intersection
+        if nearest_dist < 0:  # no intersection
             return
 
         nearest_point = nearest_dist*self.vector + self.point
@@ -110,7 +110,7 @@ class Ray:
         # if prim.shininess == 0.0:
         #    pass
 
-        # TODO
+        # TODO:
         # depending on the texture of the primitive, calculate more rays and combine result
         # light_reflection = Ray(coords, self.vector - 2*np.dot(self.vector,normal)*normal)
         #                       .evaluate(scene,recursion_depth+1)
@@ -123,13 +123,27 @@ class Ray:
 def ray_iterator(camera, resolution, block_number, total_blocks):
     # this function enables iteration through every pixel on the FOV
     # yield ray,(x,y)...
-    yield Ray(camera.point, (1, 0, 0)), (0, 0)
+
+    half_fov_width = np.tan(camera.fov_width_angle/2)
+    ratio = resolution[1]/resolution[0]
+    half_fov_height = half_fov_width*ratio
+    top_left = [1, -half_fov_width, half_fov_height]
+    down = [0, 0, -2*half_fov_height]
+    right = [0, 2*half_fov_width, 0]
+
+    for y in range(resolution[1]):
+        for x in range(resolution[0]):
+
+            yield Ray(camera.point, top_left + x/resolution[0]*right + y/resolution[1] * down), (x, y)
 
 
 def render_scene(scene, **config):
     # iterates through all pixels in viewport, traces rays and draws to bitmap
 
-    for ray, pixel in ray_iterator(scene.camera, [], 0, 1):
+    w = config["width"]
+    h = config["height"]
+
+    for ray, pixel in ray_iterator(scene.camera, [w, h], 0, 1):
         color = ray.evaluate(scene, 0)
 
 

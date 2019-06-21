@@ -27,15 +27,17 @@ class Primitive:
 
 class Camera:
     # stores information about viewport and FOV
+    # position does not currently determine viewport
+
     def __init__(self):
-        self.point = (0, 0, 0)
-        self.fov_width_angle = 110
-        self.fov_height_angle = 80
+        self.point = [0, 0, 0]
+        self.fov_width_angle = 70
+        self.view_vector = [1, 0, 0]
 
 
 class Scene:
     # container for all primitives and camera
-    def ___init___(self):
+    def __init__(self):
         self.primitives = {}
         self.light = {prim for prim in self.primitives if prim.is_light_source}
         self.camera = Camera()
