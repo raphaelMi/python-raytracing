@@ -38,6 +38,7 @@ class Scene:
     def ___init___(self):
         self.primitives = {}
         self.light = {prim for prim in self.primitives if prim.is_light_source}
+        self.camera = Camera()
 
 
 def read_scene_from_file(file):

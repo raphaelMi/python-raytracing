@@ -107,10 +107,6 @@ class Ray:
         result_lights = [sum(lights_source)[k]*prim.color[k] for k in range(3)]
 
         return result_lights
-
-
-
-
         # if prim.shininess == 0.0:
         #    pass
 
@@ -124,16 +120,16 @@ class Ray:
         # return np.quick_maffs(light...)
 
 
-def ray_iterator(camera, block_number, total_blocks):
-    yield Ray((0, 0, 0), (1, 0, 0)), (0, 0)
+def ray_iterator(camera, resolution, block_number, total_blocks):
     # this function enables iteration through every pixel on the FOV
     # yield ray,(x,y)...
+    yield Ray(camera.point, (1, 0, 0)), (0, 0)
 
 
-def render_scene(scene, config):
+def render_scene(scene, **config):
     # iterates through all pixels in viewport, traces rays and draws to bitmap
 
-    for ray, pixel in ray_iterator(scene.get_camera, 0, 1):
+    for ray, pixel in ray_iterator(scene.camera, [], 0, 1):
         color = ray.evaluate(scene, 0)
 
 
