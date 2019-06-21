@@ -40,10 +40,29 @@ class Ray:
                     if nearest_dist > -b - h >= 0:
                         nearest_dist = -b - h
                         nearest_prim = prim
-            elif prim.kind == "TRIANGLE":
-                pass
 
-        return 0, (0, 0, 0), 1.0
+            elif prim.kind == "TRIANGLE":
+
+                v0v1 = prim.points[1] - prim.points[0]
+                v0v2 = prim.points[2] - prim.points[0]
+                rov0 = self.point - prim.points[0]
+
+                n = np.cross(v0v1, v0v2)
+
+                q = np.cross(rov0, self.vector)
+
+                d = 1.0 / np.dot(self.vector, n)
+
+                u = d * np.dot(-q, v0v2)
+                v = d * np.dot(q, v0v1)
+                t = d * np.dot(-n, rov0)
+
+                if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (u + v) <= 1.0 :
+                    if nearest_dist > t >= 0:
+                        nearest_dist = t
+                        nearest_prim = prim
+            # TODO calculate intersection point based on nearest prim
+        return
         # TODO
         # return primitive,coordinates,length
 
