@@ -23,7 +23,7 @@ class Ray:
 
         nearest_dist = -1
         nearest_prim = 0
-        nearest_point = (0,0,0)
+        nearest_point = (0, 0, 0)
 
         for prim in scene.primitives:
             # we use intersection testing algorithms from
@@ -43,7 +43,7 @@ class Ray:
             elif prim.kind == "TRIANGLE":
                 pass
 
-        return geometry.Primitive(), (0, 0, 0), 1.0
+        return 0, (0, 0, 0), 1.0
         # TODO
         # return primitive,coordinates,length
 
