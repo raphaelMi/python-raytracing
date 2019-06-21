@@ -6,7 +6,7 @@ from geometry import *
 
 
 MAX_RECURSION_DEPTH = 0
-BACKGROUND_COLOR = [0, 0, 0]
+BACKGROUND_COLOR = np.array([0, 0, 0])
 
 
 class Ray:
@@ -20,7 +20,7 @@ class Ray:
 
         nearest_dist = -1
         nearest_prim = 0
-        nearest_point = [0, 0, 0]
+        nearest_point = np.array([0, 0, 0])
 
         for prim in scene.primitives:
             # we use intersection testing algorithms from
@@ -62,7 +62,7 @@ class Ray:
             return
 
         nearest_point = nearest_dist*self.vector + self.point
-        normal = [0, 0, 0]
+        normal = np.array([0, 0, 0])
         if nearest_prim.kind == "SPHERE":
             normal = nearest_point - nearest_prim.points[0]
             normal = normal * (1/np.linalg.norm(normal))
@@ -82,20 +82,22 @@ class Ray:
 
         if prim.is_light_source:
             # if the ray hits a light source we can stop iterating
-            return prim.color, prim.light_intensity/length**2
+            return prim.color/length**2
 
         if recursion_depth > MAX_RECURSION_DEPTH:
             # rays die after exceeding depth of recursion
-            return [0.0, 0.0, 0.0]
+            return np.array([0.0, 0.0, 0.0])
 
         lights_source = []
 
         for light_prim in scene.lights:
-            light_point = [0, 0, 0]
+            light_point = np.array([0, 0, 0])
             if light_prim.kind == "SPHERE":
                 light_point = light_prim.points[0]
             elif light_prim.kind == "TRIANGLE":
                 light_point = sum(light_prim.points)/3
+            else:
+                continue
 
             light_vector = light_point - coord
             c = Ray(coord, light_vector).evaluate(scene, 1)
@@ -127,9 +129,9 @@ def ray_iterator(camera, resolution, block_number, total_blocks):
     half_fov_width = np.tan(camera.fov_width_angle/2)
     ratio = resolution[1]/resolution[0]
     half_fov_height = half_fov_width*ratio
-    top_left = [1, -half_fov_width, half_fov_height]
-    down = [0, 0, -2*half_fov_height]
-    right = [0, 2*half_fov_width, 0]
+    top_left = np.array([1, -half_fov_width, half_fov_height])
+    down = np.array([0, 0, -2*half_fov_height])
+    right = np.array([0, 2*half_fov_width, 0])
 
     for y in range(resolution[1]):
         for x in range(resolution[0]):
@@ -143,8 +145,12 @@ def render_scene(scene, **config):
     w = config["width"]
     h = config["height"]
 
+    pixels = [[0, 0, 0]]*(w*h)
+
     for ray, pixel in ray_iterator(scene.camera, [w, h], 0, 1):
         color = ray.evaluate(scene, 0)
+        color = np.clip(np.uint8(color*255), a_min=0, a_max=255)
+
 
 
 
