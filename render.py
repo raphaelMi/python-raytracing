@@ -141,6 +141,9 @@ def ray_iterator(camera, resolution, block_number, total_blocks):
 
 def render_scene(scene, **config):
     # iterates through all pixels in viewport, traces rays and draws to bitmap
+    # For the documentation of the config parameters, look at main.py
+    # The method is expected to return a 2D array containing the exact block as requested.
+    # The size of the first and last column may vary - therefore take the parameters "firstColumn" and "lastColumn" into account
 
     w = config["width"]
     h = config["height"]
