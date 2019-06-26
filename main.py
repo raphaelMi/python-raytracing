@@ -6,11 +6,12 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import time
+from test import test_scene
 
 # Initialize image data
-width = 570 # Image width
-height = 316 # Image height
-cores = 8 # Segments in which the image is divided
+width = 160 # Image width
+height = 90 # Image height
+cores = 1 # Segments in which the image is divided
 pixelsPerBlock = int(np.ceil((width*height)/cores)) # Rough estimation of pixels per segment
 
 # Debug output
@@ -22,7 +23,8 @@ print("Segments: " + str(cores))
 print("Pixels per segment: "+str(pixelsPerBlock))
 
 # Prepare the scene
-scene = Scene({})
+
+scene = test_scene
 
 renderedImage = np.empty((height,width,3)) # Black background by default
 
@@ -68,7 +70,7 @@ for i in range(cores):
            renderedImage[startRow+row][column if row != 0 else (column+startColumn)]=color
   
    # Display the image
-   plt.imshow((renderedImage)) #.astype(np.uint8))
+   plt.imshow((renderedImage).astype(np.uint8))
    plt.show()
    
 print("-- Finished rendering --")

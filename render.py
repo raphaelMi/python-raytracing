@@ -34,9 +34,9 @@ class Ray:
                 h = b**2 - c
                 if h >= 0.0:  # TODO check if this algorithm fails when ray origin is inside sphere
                     h = np.sqrt(h)
-                    if nearest_dist > -b - h > 0:  # TODO check if isClose is needed
-                        nearest_dist = -b - h
-                        nearest_prim = prim
+                    #if nearest_dist > -b - h > 0:  # TODO check if isClose is needed
+                    nearest_dist = np.minimum(np.abs(-b - h),np.abs(-b+h))
+                    nearest_prim = prim
 
             elif prim.kind == "TRIANGLE":
 
@@ -55,7 +55,7 @@ class Ray:
                 t = d * np.dot(-n, rov0)
 
                 if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (u + v) <= 1.0:
-                    if nearest_dist > t > 0:
+                    if  t > 0: # TODO Check whether this really works
                         nearest_dist = t
                         nearest_prim = prim
         if nearest_dist < 0:  # no intersection
@@ -76,9 +76,9 @@ class Ray:
         # [1.0, 1.0, 1.0] is white
         try:
             prim, coord, length, normal = self.intersect(scene)
-        except ValueError:
+        except TypeError:
             # if ray did not make any intersection, return
-            return BACKGROUND_COLOR, 0
+            return BACKGROUND_COLOR
 
         if prim.is_light_source:
             # if the ray hits a light source we can stop iterating
@@ -106,8 +106,7 @@ class Ray:
 
             lights_source.append(c)
 
-        result_lights = [sum(lights_source)[k]*prim.color[k] for k in range(3)]
-
+        result_lights = np.asarray([sum(lights_source)[k]*prim.color[k] for k in range(3)])
         return result_lights
         # if prim.shininess == 0.0:
         #    pass
@@ -122,21 +121,20 @@ class Ray:
         # return np.quick_maffs(light...)
 
 
-def ray_iterator(camera, resolution, block_number, total_blocks):
-    # this function enables iteration through every pixel on the FOV
+def ray_iterator(camera, resolution, startRow, endRow, startColumn, endColumn):
+    # this function enables iteration through every pixel on the FOV for the specified part to be rendered
     # yield ray,(x,y)...
 
     half_fov_width = np.tan(camera.fov_width_angle/2)
     ratio = resolution[1]/resolution[0]
     half_fov_height = half_fov_width*ratio
-    top_left = np.array([1, -half_fov_width, half_fov_height])
+    top_left = np.array([-1, -half_fov_width, half_fov_height])
     down = np.array([0, 0, -2*half_fov_height])
     right = np.array([0, 2*half_fov_width, 0])
 
-    for y in range(resolution[1]):
-        for x in range(resolution[0]):
-
-            yield Ray(camera.point, top_left + x/resolution[0]*right + y/resolution[1] * down), (x, y)
+    for y in range(endRow - startRow+1):
+        for x in range(resolution[0]-startColumn if y==0 else (endColumn+1 if y==endRow else resolution[0])):
+            yield Ray(camera.point, top_left + (startColumn+x if y==0 else x)/resolution[0]*right + (startRow+y)/resolution[1] * down), (x, y)
 
 
 def render_scene(scene, **config):
@@ -148,11 +146,27 @@ def render_scene(scene, **config):
     w = config["width"]
     h = config["height"]
 
-    pixels = [[0, 0, 0]]*(w*h)
+    startRow = config["startRow"]
+    startColumn = config["startColumn"]
 
-    for ray, pixel in ray_iterator(scene.camera, [w, h], 0, 1):
-        color = ray.evaluate(scene, 0)
-        color = np.clip(np.uint8(color*255), a_min=0, a_max=255)
+    endRow = config["endRow"]
+    endColumn = config["endColumn"]
+
+
+    pixels = []
+
+    for ray, pixel in ray_iterator(scene.camera, [w, h], startRow,endRow,startColumn,endColumn):
+        color = np.clip(np.uint8(ray.evaluate(scene, 0)*255), a_min=0, a_max=255)
+        x = pixel[0]
+        y = pixel[1]
+        if len(pixels) <= y:
+            pixels.append([])
+        row = pixels[y]
+        if(len(row)) <= x:
+            row.append([])
+        row[x] = color
+
+    return pixels
 
 
 
