@@ -4,7 +4,6 @@
 import numpy as np
 from geometry import *
 
-
 MAX_RECURSION_DEPTH = 0
 BACKGROUND_COLOR = np.array([0, 0, 0])
 
@@ -13,7 +12,7 @@ class Ray:
     # ray has information about
     def __init__(self, point, vector):
         self.point = point
-        self.vector = vector*(1/np.linalg.norm(vector))
+        self.vector = vector * (1 / np.linalg.norm(vector))
 
     def intersect(self, scene):
         # calculate the earliest intersection with a primitive of the scene
@@ -30,12 +29,12 @@ class Ray:
 
                 origin_center = self.point - prim.points[0]
                 b = np.dot(origin_center, self.vector)
-                c = np.linalg.norm(origin_center)**2 - prim.radius**2
-                h = b**2 - c
+                c = np.linalg.norm(origin_center) ** 2 - prim.radius ** 2
+                h = b ** 2 - c
                 if h >= 0.0:  # TODO check if this algorithm fails when ray origin is inside sphere
                     h = np.sqrt(h)
-                    #if nearest_dist > -b - h > 0:  # TODO check if isClose is needed
-                    nearest_dist = np.minimum(np.abs(-b - h),np.abs(-b+h))
+                    # if nearest_dist > -b - h > 0:  # TODO check if isClose is needed
+                    nearest_dist = np.minimum(np.abs(-b - h), np.abs(-b + h))
                     nearest_prim = prim
 
             elif prim.kind == "TRIANGLE":
@@ -55,17 +54,17 @@ class Ray:
                 t = d * np.dot(-n, rov0)
 
                 if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (u + v) <= 1.0:
-                    if  t > 0: # TODO Check whether this really works
+                    if t > 0:  # TODO Check whether this really works
                         nearest_dist = t
                         nearest_prim = prim
         if nearest_dist < 0:  # no intersection
             return
 
-        nearest_point = nearest_dist*self.vector + self.point
+        nearest_point = nearest_dist * self.vector + self.point
         normal = np.array([0, 0, 0])
         if nearest_prim.kind == "SPHERE":
             normal = nearest_point - nearest_prim.points[0]
-            normal = normal * (1/np.linalg.norm(normal))
+            normal = normal * (1 / np.linalg.norm(normal))
         elif nearest_prim.kind == "TRIANGLE":
             normal = nearest_prim.normal
 
@@ -82,7 +81,7 @@ class Ray:
 
         if prim.is_light_source:
             # if the ray hits a light source we can stop iterating
-            return prim.color/length**2
+            return prim.color / length ** 2
 
         if recursion_depth > MAX_RECURSION_DEPTH:
             # rays die after exceeding depth of recursion
@@ -95,18 +94,18 @@ class Ray:
             if light_prim.kind == "SPHERE":
                 light_point = light_prim.points[0]
             elif light_prim.kind == "TRIANGLE":
-                light_point = sum(light_prim.points)/3
+                light_point = sum(light_prim.points) / 3
             else:
                 continue
 
             light_vector = light_point - coord
             c = Ray(coord, light_vector).evaluate(scene, 1)
-            c = c*np.dot(normal, light_vector)/(np.linalg.norm(light_vector)*np.linalg.norm(normal))
+            c = c * np.dot(normal, light_vector) / (np.linalg.norm(light_vector) * np.linalg.norm(normal))
             # intensity has to be scaled down relative to the angle
 
             lights_source.append(c)
 
-        result_lights = np.asarray([sum(lights_source)[k]*prim.color[k] for k in range(3)])
+        result_lights = np.asarray([sum(lights_source)[k] * prim.color[k] for k in range(3)])
         return result_lights
         # if prim.shininess == 0.0:
         #    pass
@@ -125,16 +124,18 @@ def ray_iterator(camera, resolution, startRow, endRow, startColumn, endColumn):
     # this function enables iteration through every pixel on the FOV for the specified part to be rendered
     # yield ray,(x,y)...
 
-    half_fov_width = np.tan(camera.fov_width_angle/2)
-    ratio = resolution[1]/resolution[0]
-    half_fov_height = half_fov_width*ratio
+    half_fov_width = np.tan(camera.fov_width_angle / 2)
+    ratio = resolution[1] / resolution[0]
+    half_fov_height = half_fov_width * ratio
     top_left = np.array([-1, -half_fov_width, half_fov_height])
-    down = np.array([0, 0, -2*half_fov_height])
-    right = np.array([0, 2*half_fov_width, 0])
+    down = np.array([0, 0, -2 * half_fov_height])
+    right = np.array([0, 2 * half_fov_width, 0])
 
-    for y in range(endRow - startRow+1):
-        for x in range(resolution[0]-startColumn if y==0 else (endColumn+1 if y==endRow else resolution[0])):
-            yield Ray(camera.point, top_left + (startColumn+x if y==0 else x)/resolution[0]*right + (startRow+y)/resolution[1] * down), (x, y)
+    for y in range(endRow - startRow + 1):
+        for x in range(resolution[0] - startColumn if y == 0 else (endColumn + 1 if y == endRow else resolution[0])):
+            yield Ray(camera.point,
+                      top_left + (startColumn + x if y == 0 else x) / resolution[0] * right + (startRow + y) /
+                      resolution[1] * down), (x, y)
 
 
 def render_scene(scene, **config):
@@ -152,25 +153,17 @@ def render_scene(scene, **config):
     endRow = config["endRow"]
     endColumn = config["endColumn"]
 
-
     pixels = []
 
-    for ray, pixel in ray_iterator(scene.camera, [w, h], startRow,endRow,startColumn,endColumn):
-        color = np.clip(np.uint8(ray.evaluate(scene, 0)*255), a_min=0, a_max=255)
+    for ray, pixel in ray_iterator(scene.camera, [w, h], startRow, endRow, startColumn, endColumn):
+        color = np.uint8(np.clip(ray.evaluate(scene, 0) * 255, a_min=0, a_max=255))
         x = pixel[0]
         y = pixel[1]
         if len(pixels) <= y:
             pixels.append([])
         row = pixels[y]
-        if(len(row)) <= x:
+        if (len(row)) <= x:
             row.append([])
         row[x] = color
 
     return pixels
-
-
-
-
-
-
-
