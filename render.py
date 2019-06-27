@@ -2,6 +2,8 @@
 
 
 import numpy as np
+from numpy.core._multiarray_umath import ndarray
+
 from geometry import *
 
 MAX_RECURSION_DEPTH = 0
@@ -17,9 +19,10 @@ class Ray:
     def intersect(self, scene):
         # calculate the earliest intersection with a primitive of the scene
 
-        nearest_dist = -1
+        nearest_dist = 10 ** 8
         nearest_prim = 0
 
+        prim: Primitive
         for prim in scene.primitives:
             # we use intersection testing algorithms from
             # http://www.iquilezles.org/www/articles/intersectors/intersectors.htm
@@ -32,10 +35,10 @@ class Ray:
                 h = b ** 2 - c
                 if h >= 0.0:  # TODO check if this algorithm fails when ray origin is inside sphere
                     h = np.sqrt(h)
-                    if nearest_dist > -b - h > 0:
+                    if nearest_dist > -b - h > 0 and not np.isclose(-b - h, 0):
                         nearest_dist = -b - h
                         nearest_prim = prim
-                    if nearest_dist > -b + h > 0:
+                    if nearest_dist > -b + h > 0 and not np.isclose(-b + h, 0):
                         nearest_dist = -b + h
                         nearest_prim = prim
 
@@ -57,11 +60,11 @@ class Ray:
                     v = d * np.dot(q, v0v1)
                     t = d * np.dot(-n, rov0)
 
-                    if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (u + v) <= 1.0:
-                        if nearest_dist > t > 0:  # TODO Check whether this really works
-                            nearest_dist = t
-                            nearest_prim = prim
-        if nearest_dist < 0:  # no intersection
+                    if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (
+                            u + v) <= 1.0 and nearest_dist > t > 0 and not np.isclose(t, 0):
+                        nearest_dist = t
+                        nearest_prim = prim
+        if nearest_dist > 10 ** 8:  # no intersection
             return
 
         nearest_point = nearest_dist * self.vector + self.point
@@ -75,7 +78,7 @@ class Ray:
         return nearest_prim, nearest_point, nearest_dist, normal
 
     def evaluate(self, scene, recursion_depth):
-        # evaluates chromaticity and brightness of a given ray recursively for a set depth of recursion
+        # evaluates color and brightness of a given ray recursively for a set depth of recursion
         # [1.0, 1.0, 1.0] is white
         try:
             prim, coord, length, normal = self.intersect(scene)
@@ -85,7 +88,7 @@ class Ray:
 
         if prim.is_light_source:
             # if the ray hits a light source we can stop iterating
-            return prim.color / length ** 2
+            return prim.color / (length+1) ** 2
 
         if recursion_depth > MAX_RECURSION_DEPTH:
             # rays die after exceeding depth of recursion
@@ -94,7 +97,6 @@ class Ray:
         lights_source = []
 
         for light_prim in scene.lights:
-            light_point = np.array([0, 0, 0])
             if light_prim.kind == "SPHERE":
                 light_point = light_prim.points[0]
             elif light_prim.kind == "TRIANGLE":
@@ -104,13 +106,13 @@ class Ray:
 
             light_vector = light_point - coord
             c = Ray(coord, light_vector).evaluate(scene, 1)
-            c = c * np.dot(normal, light_vector) / (np.linalg.norm(light_vector) * np.linalg.norm(normal))
+            c = c * np.abs(np.dot(normal, light_vector) / (np.linalg.norm(light_vector) * np.linalg.norm(normal)))
             # intensity has to be scaled down relative to the angle
 
             lights_source.append(c)
 
         result_lights = np.array([sum(lights_source)[k] * prim.color[k] for k in range(3)])
-        return result_lights / length ** 2
+        return result_lights / (length+1) ** 2
         # if prim.shininess == 0.0:
         #    pass
 
@@ -143,10 +145,10 @@ def ray_iterator(camera, resolution, startRow, endRow, startColumn, endColumn):
 
 
 def render_scene(scene, **config):
-    # iterates through all pixels in viewport, traces rays and draws to bitmap
-    # For the documentation of the config parameters, look at main.py
-    # The method is expected to return a 2D array containing the exact block as requested.
-    # The size of the first and last column may vary - therefore take the parameters "firstColumn" and "lastColumn" into account
+    # Iterates through all pixels in viewport, traces rays and draws to bitmap. For the documentation of the config
+    # parameters, look at main.py. The method is expected to return a 2D array containing the exact block as
+    # requested. The size of the first and last column may vary - therefore take the parameters "firstColumn" and
+    # "lastColumn" into account
 
     w = config["width"]
     h = config["height"]
