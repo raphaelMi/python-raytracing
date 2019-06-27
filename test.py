@@ -1,17 +1,22 @@
 from geometry import *
 
-ball_light = Primitive([0, 5, 2], radius=0.2)
-ball_light.is_light_source = True
-ball_light.color = np.array([1, 1, 1])*500
+ball = Primitive([5, 0, -0.6], radius=0.3)
+ball.is_light_source = False
+ball.color = np.array([0.3, 0.1, 0.2])
 
-red_triangle = Primitive(point_a=[5, 0, 0], point_b=[0, 5, 0], point_c=[0, 0, 5])
-red_triangle.color = np.array([0.5, 0.2, 0.2])
-red_triangle.is_light_source = False
+light_src0 = Primitive(point_a=[5, 1, 1], radius=0.1)
+light_src0.color = np.array([1, 1, 1]) * 700
+light_src0.is_light_source = True
 
-blue_triangle = Primitive(point_a=[5, 0, 0], point_b=[0, 0, 5], point_c=[0, 5, 5])
-blue_triangle.color = np.array([0.2, 0.2, 0.5])
-blue_triangle.is_light_source = False
+light_src1 = Primitive(point_a=[5, -1, 1], radius=0.1)
+light_src1.color = np.array([1, 1, 1]) * 700
+light_src1.is_light_source = True
 
-test_scene = Scene({ball_light, blue_triangle, red_triangle})
+bottom_wall = Primitive(point_a=[10, 0, -1], point_b=[0, -10, -1], point_c=[0, 10, -1])
+bottom_wall.color = np.array([0.3, 0.2, 0.1])
+left_wall = Primitive(point_a=[10, 0, -1], point_b=[0, -10, -1], point_c=[10, 0, 9])
+left_wall.color = np.array([0.1, 0.2, 0.3])
+right_wall = Primitive(point_a=[10, 0, -1], point_b=[0, 10, -1], point_c=[10, 0, 9])
+right_wall.color = np.array([0.2, 0.3, 0.3])
 
-test_scene.camera.point = (1, 1, 1)
+test_scene = Scene({light_src0, light_src1, bottom_wall, left_wall, right_wall, ball})
