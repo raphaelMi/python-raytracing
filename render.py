@@ -2,7 +2,7 @@
 
 from geometry import *
 
-MAX_RECURSION_DEPTH = 0
+MAX_RECURSION_DEPTH = 1
 BACKGROUND_COLOR = np.array([0, 0, 0])
 # evaluate flags
 FLAG_DEFAULT = 0x00
@@ -103,9 +103,9 @@ class Ray:
 
         # diffuse lightrays heading to source
         for light_prim in scene.lights:
-            if light_prim.kind == "SPHERE":
+            if light_prim.kind == KIND_SPHERE:
                 light_point = light_prim.points[0]
-            elif light_prim.kind == "TRIANGLE":
+            elif light_prim.kind == KIND_TRIANGLE:
                 light_point = sum(light_prim.points) / 3
             else:
                 continue
@@ -118,8 +118,8 @@ class Ray:
             incoming_lightrays.append(c)
 
         # diffuse lightray in direction of normal (heuristic)
-        # d = Ray(coord, normal).evaluate(scene, recursion_depth + 1, flag=FLAG_LIGHTS_SKIP)
-        # incoming_lightrays.append(d)
+        d = Ray(coord, normal).evaluate(scene, recursion_depth + 1, flag=FLAG_LIGHTS_SKIP)
+        incoming_lightrays.append(d)
 
         result_lights = np.multiply(sum(incoming_lightrays), prim.color)
         return result_lights / (length+1) ** 2
