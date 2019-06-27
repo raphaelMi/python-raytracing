@@ -2,17 +2,24 @@
 
 import numpy as np
 
+KIND_TRIANGLE = 1
+KIND_SPHERE = 2
+
+COLOR_RED = np.array([1, 0, 0])
+COLOR_GREEN = np.array([0, 1, 0])
+COLOR_BLUE = np.array([0, 0, 1])
+
 
 class Primitive:
     # stores a single triangle or sphere, along with texture and color data
     def __init__(self, point_a, radius=0.0, point_b=np.array([0, 0, 0]), point_c=np.array([0, 0, 0])):
         # initializer for triangle primitives
         if radius > 0:
-            self.kind = "SPHERE"
+            self.kind = KIND_SPHERE
             self.points = [np.array(point_a)]
             self.radius = radius
         elif radius == 0:
-            self.kind = "TRIANGLE"
+            self.kind = KIND_TRIANGLE
             self.points = [np.array(point_a), np.array(point_b), np.array(point_c)]
             n = np.cross(self.points[1] - self.points[0], self.points[2] - self.points[0])
             self.normal = n * (1 / np.linalg.norm(n))
