@@ -19,7 +19,6 @@ class Ray:
 
         nearest_dist = -1
         nearest_prim = 0
-        nearest_point = np.array([0, 0, 0])
 
         for prim in scene.primitives:
             # we use intersection testing algorithms from
@@ -33,9 +32,12 @@ class Ray:
                 h = b ** 2 - c
                 if h >= 0.0:  # TODO check if this algorithm fails when ray origin is inside sphere
                     h = np.sqrt(h)
-                    # if nearest_dist > -b - h > 0:  # TODO check if isClose is needed
-                    nearest_dist = np.minimum(np.abs(-b - h), np.abs(-b + h))
-                    nearest_prim = prim
+                    if nearest_dist > -b - h > 0:
+                        nearest_dist = -b - h
+                        nearest_prim = prim
+                    if nearest_dist > -b + h > 0:
+                        nearest_dist = -b + h
+                        nearest_prim = prim
 
             elif prim.kind == "TRIANGLE":
 
@@ -56,7 +58,7 @@ class Ray:
                     t = d * np.dot(-n, rov0)
 
                     if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (u + v) <= 1.0:
-                        if t > 0:  # TODO Check whether this really works
+                        if nearest_dist > t > 0:  # TODO Check whether this really works
                             nearest_dist = t
                             nearest_prim = prim
         if nearest_dist < 0:  # no intersection
