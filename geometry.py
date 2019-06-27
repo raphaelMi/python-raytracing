@@ -15,9 +15,9 @@ class Primitive:
             self.kind = "TRIANGLE"
             self.points = [np.array(point_a), np.array(point_b), np.array(point_c)]
             n = np.cross(self.points[1] - self.points[0], self.points[2] - self.points[0])
-            self.normal = n*(1/np.linalg.norm(n))
+            self.normal = n * (1 / np.linalg.norm(n))
 
-        self.color = [255, 255, 255]
+        self.color = np.array([255, 255, 255])
         self.shininess = 0
         self.is_transparent = False
         self.refractive_index = 1
@@ -41,7 +41,7 @@ class Scene:
         self.lights = {prim for prim in self.primitives if prim.is_light_source}
         self.camera = Camera()
 
-    def add_primitive(self,prim):
+    def add_primitive(self, prim):
         self.primitives.add(prim)
         if prim.is_light_source:
             self.lights.add(prim)

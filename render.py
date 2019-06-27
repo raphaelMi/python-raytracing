@@ -47,16 +47,18 @@ class Ray:
 
                 q = np.cross(rov0, self.vector)
 
-                d = 1.0 / np.dot(self.vector, n)
+                a = np.dot(self.vector, n)
+                if not a == 0:
+                    d = 1.0 / a
 
-                u = d * np.dot(-q, v0v2)
-                v = d * np.dot(q, v0v1)
-                t = d * np.dot(-n, rov0)
+                    u = d * np.dot(-q, v0v2)
+                    v = d * np.dot(q, v0v1)
+                    t = d * np.dot(-n, rov0)
 
-                if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (u + v) <= 1.0:
-                    if t > 0:  # TODO Check whether this really works
-                        nearest_dist = t
-                        nearest_prim = prim
+                    if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (u + v) <= 1.0:
+                        if t > 0:  # TODO Check whether this really works
+                            nearest_dist = t
+                            nearest_prim = prim
         if nearest_dist < 0:  # no intersection
             return
 
@@ -105,8 +107,8 @@ class Ray:
 
             lights_source.append(c)
 
-        result_lights = np.asarray([sum(lights_source)[k] * prim.color[k] for k in range(3)])
-        return result_lights
+        result_lights = np.array([sum(lights_source)[k] * prim.color[k] for k in range(3)])
+        return result_lights / length ** 2
         # if prim.shininess == 0.0:
         #    pass
 
@@ -127,7 +129,7 @@ def ray_iterator(camera, resolution, startRow, endRow, startColumn, endColumn):
     half_fov_width = np.tan(camera.fov_width_angle / 2)
     ratio = resolution[1] / resolution[0]
     half_fov_height = half_fov_width * ratio
-    top_left = np.array([-1, -half_fov_width, half_fov_height])
+    top_left = np.array([1, -half_fov_width, half_fov_height])
     down = np.array([0, 0, -2 * half_fov_height])
     right = np.array([0, 2 * half_fov_width, 0])
 
