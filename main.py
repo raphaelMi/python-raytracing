@@ -9,8 +9,8 @@ import time
 from test import test_scene
 
 # Initialize image data
-width = 176  # Image width
-height = 120  # Image height
+width = 160  # Image width
+height = 90  # Image height
 cores = 1  # Segments in which the image is divided
 pixelsPerBlock = int(np.ceil((width * height) / cores))  # Rough estimation of pixels per segment
 
