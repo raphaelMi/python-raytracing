@@ -6,9 +6,18 @@ import numpy as np
 import time
 from test import test_scene
 
+ULD = [160, 90]         # Ultra Low Definition; resolution mostly for quick testing
+VLD = [320, 180]        # Very Low Definition
+LD = [720, 360]         # Low Definition
+SD = [1024, 576]        # Standard Definition
+HD = [1280, 720]        # High Definition
+FHD = [1920, 1080]      # Full HD
+UHD = [2560, 1440]      # Ultra High Definition
+UHD_4K = [3840, 2160]   # as a meme
+
 # Initialize image data
-width = 160  # Image width
-height = 90  # Image height
+width = SD[0]  # Image width
+height = SD[1]  # Image height
 cores = 1  # Segments in which the image is divided
 pixels_per_block = int(np.ceil((width * height) / cores))  # Rough estimation of pixels per segment
 
