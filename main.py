@@ -1,10 +1,12 @@
 # This module manages UI and parallel programming
+import time
+
+import numpy as np
 
 from render import *
-import matplotlib.pyplot as plt
-import numpy as np
-import time
 from test import test_scene
+import PIL
+from PIL import Image
 
 ULD = [160, 90]         # Ultra Low Definition; resolution mostly for quick testing
 VLD = [320, 180]        # Very Low Definition
@@ -16,8 +18,8 @@ UHD = [2560, 1440]      # Ultra High Definition
 UHD_4K = [3840, 2160]   # as a meme
 
 # Initialize image data
-width = SD[0]  # Image width
-height = SD[1]  # Image height
+width = VLD[0]  # Image width
+height = VLD[1]  # Image height
 cores = 1  # Segments in which the image is divided
 pixels_per_block = int(np.ceil((width * height) / cores))  # Rough estimation of pixels per segment
 
@@ -79,8 +81,11 @@ for i in range(cores):
             rendered_image[start_row + row][column if row != 0 else (column + start_column)] = color
 
     # Display the image
-    plt.imshow(rendered_image.astype(np.uint8))
-    plt.show()
+    # plt.imshow(rendered_image.astype(np.uint8))
+    # plt.show()
+    im = Image.fromarray(rendered_image, mode="RGB")
+    im = im.resize([int(width / 2), int(height / 2)], Image.LANCZOS)
+    im.show(title="render")
 
 print("-- Finished rendering --")
 print("Rendered image within " + str(image_render_time) + "s")
