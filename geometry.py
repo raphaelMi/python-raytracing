@@ -25,6 +25,7 @@ class Primitive:
             self.normal = n * (1 / np.linalg.norm(n))
 
         self.color = np.array([255, 255, 255])
+        self.specular = 1
         self.shininess = 0
         self.is_transparent = False
         self.refractive_index = 1

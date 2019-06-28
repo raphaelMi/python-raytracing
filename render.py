@@ -3,7 +3,7 @@
 from geometry import *
 
 MAX_RECURSION_DEPTH = 1
-BACKGROUND_COLOR = np.array([0, 0, 0])
+BACKGROUND_COLOR = np.array([0.2, 0.2, 0.2])
 # evaluate flags
 FLAG_DEFAULT = 0x00
 FLAG_LIGHTS_ONLY = 0x01
@@ -70,7 +70,7 @@ class Ray:
         normal = np.array([0.0, 0.0, 0.0])
         if nearest_prim.kind == KIND_SPHERE:
             normal = nearest_point - nearest_prim.points[0]
-            normal = normal * (1 / np.linalg.norm(normal))
+            normal /= np.linalg.norm(normal)
         elif nearest_prim.kind == KIND_TRIANGLE:
             normal = nearest_prim.normal
 
@@ -94,7 +94,7 @@ class Ray:
             if flag & FLAG_LIGHTS_SKIP:
                 return np.array([0.0, 0.0, 0.0])
             # if the ray hits a light source we can stop iterating
-            return prim.color / (length+1) ** 2
+            return prim.color / (length + 1) ** 2
 
         if flag & FLAG_LIGHTS_ONLY:
             return np.array([0.0, 0.0, 0.0])
@@ -111,12 +111,24 @@ class Ray:
                 continue
 
             light_vector = light_point - coord
+            light_vector /= np.linalg.norm(light_vector)
             c = Ray(coord, light_vector).evaluate(scene, MAX_RECURSION_DEPTH, flag=FLAG_LIGHTS_ONLY)
-            c = c * np.abs(np.dot(normal, light_vector)) / (np.linalg.norm(light_vector) * np.linalg.norm(normal))
-            # intensity has to be scaled down relative to the angle
 
-            # incoming_lightrays.append(np.multiply(c, prim.color))
-            incoming_lightrays.append(c)
+            # intensity has to be scaled down relative to the angle
+            cos_light_normal = np.abs(np.dot(normal, light_vector))
+
+            # diffuse light seeking lightsource
+            e = c * cos_light_normal
+
+            incoming_lightrays.append(np.multiply(e, prim.color))
+            # incoming_lightrays.append(c)
+
+            if prim.specular > 1:
+                middle = -self.vector + light_vector
+                middle /= np.linalg.norm(middle)
+                cos_middle_normal = np.abs(np.dot(normal, middle))
+                s = prim.shininess * c * cos_middle_normal ** prim.specular
+                incoming_lightrays.append(s)
 
         # diffuse lightray in direction of normal (heuristic)
         # d = Ray(coord, normal).evaluate(scene, MAX_RECURSION_DEPTH, flag=FLAG_LIGHTS_SKIP)
@@ -128,12 +140,12 @@ class Ray:
         diffuse_vector = normal + delta
         d = Ray(coord, diffuse_vector).evaluate(scene, MAX_RECURSION_DEPTH - 1, flag=FLAG_LIGHTS_SKIP)
         d = d * np.abs(np.dot(normal, diffuse_vector)) / (np.linalg.norm(diffuse_vector) * np.linalg.norm(normal))
-        # incoming_lightrays.append(np.multiply(d, prim.color))
-        incoming_lightrays.append(d)
+        incoming_lightrays.append(np.multiply(d, prim.color))
+        # incoming_lightrays.append(d)
 
-        # result = np.sum(incoming_lightrays)
-        result = np.multiply(np.sum(incoming_lightrays, axis=0), prim.color)
-        return result / (length+1) ** 2
+        result = np.sum(incoming_lightrays, axis=0)
+        # result = np.multiply(np.sum(incoming_lightrays, axis=0), prim.color)
+        return result / (length + 1) ** 2
         # if prim.shininess == 0.0:
         #    pass
 

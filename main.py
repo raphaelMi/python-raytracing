@@ -4,7 +4,7 @@ import time
 import numpy as np
 
 from render import *
-from test import test_scene
+import test
 import PIL
 from PIL import Image
 
@@ -33,7 +33,7 @@ print("Pixels per segment: " + str(pixels_per_block))
 
 # Prepare the scene
 
-scene = test_scene
+scene = test.test_scene_0
 
 image_render_time = 0
 
