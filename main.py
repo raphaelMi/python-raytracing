@@ -18,8 +18,8 @@ UHD = [2560, 1440]      # Ultra High Definition
 UHD_4K = [3840, 2160]   # as a meme
 
 # Initialize image data
-width = VLD[0]  # Image width
-height = VLD[1]  # Image height
+width = ULD[0]  # Image width
+height = ULD[1]  # Image height
 cores = 1  # Segments in which the image is divided
 pixels_per_block = int(np.ceil((width * height) / cores))  # Rough estimation of pixels per segment
 
@@ -35,11 +35,7 @@ print("Pixels per segment: " + str(pixels_per_block))
 
 scene = test_scene
 
-rendered_image = np.empty((height, width, 3))  # Black background by default
-
 image_render_time = 0
-
-print("\n-- Started rendering --")
 
 # Rendering - render every block into the image
 for i in range(cores):
@@ -55,7 +51,7 @@ for i in range(cores):
     end_column = end_index % width  # The end column
 
     # Debug output
-    print("Rendering block: " + str(block))
+    print("\nRendering block: " + str(block))
     print("Start index (1D): " + str(start_index))
     print("End index (1D): " + str(end_index))
     print("Start row index: " + str(start_row))
@@ -74,18 +70,13 @@ for i in range(cores):
     image_render_time += block_render_time  # Only count the time spent on rendering, not displaying
     print("Rendered block within", str(block_render_time) + "s")
 
-    # Add the block to the rendered image
-    for row in range(len(rendered_block)):
-        for column in range(len(rendered_block[row])):
-            color = rendered_block[row][column]
-            rendered_image[start_row + row][column if row != 0 else (column + start_column)] = color
-
     # Display the image
-    # plt.imshow(rendered_image.astype(np.uint8))
-    # plt.show()
-    im = Image.fromarray(rendered_image, mode="RGB")
-    im = im.resize([int(width / 2), int(height / 2)], Image.LANCZOS)
+
+    im = PIL.Image.fromarray(rendered_block, mode="RGB")
+    im = im.resize([width//2, height//2], Image.LANCZOS)
+    im.save("render.bmp")
     im.show(title="render")
+
 
 print("-- Finished rendering --")
 print("Rendered image within " + str(image_render_time) + "s")

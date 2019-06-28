@@ -115,6 +115,7 @@ class Ray:
             c = c * np.abs(np.dot(normal, light_vector)) / (np.linalg.norm(light_vector) * np.linalg.norm(normal))
             # intensity has to be scaled down relative to the angle
 
+            # incoming_lightrays.append(np.multiply(c, prim.color))
             incoming_lightrays.append(c)
 
         # diffuse lightray in direction of normal (heuristic)
@@ -127,9 +128,11 @@ class Ray:
         diffuse_vector = normal + delta
         d = Ray(coord, diffuse_vector).evaluate(scene, MAX_RECURSION_DEPTH - 1, flag=FLAG_LIGHTS_SKIP)
         d = d * np.abs(np.dot(normal, diffuse_vector)) / (np.linalg.norm(diffuse_vector) * np.linalg.norm(normal))
+        # incoming_lightrays.append(np.multiply(d, prim.color))
         incoming_lightrays.append(d)
 
-        result = np.multiply(sum(incoming_lightrays), prim.color)
+        # result = np.sum(incoming_lightrays)
+        result = np.multiply(np.sum(incoming_lightrays, axis=0), prim.color)
         return result / (length+1) ** 2
         # if prim.shininess == 0.0:
         #    pass
@@ -177,17 +180,10 @@ def render_scene(scene: Scene, **config):
     end_row = config["end_row"]
     end_column = config["end_column"]
 
-    pixels = []
+    pixels = np.zeros((h, w, 3), dtype=np.uint8)
 
     for ray, pixel in ray_iterator(scene.camera, [w, h], start_row, end_row, start_column, end_column):
         color = np.uint8(np.clip(ray.evaluate(scene, 0) * 255, a_min=0, a_max=255))
-        x = pixel[0]
-        y = pixel[1]
-        if len(pixels) <= y:
-            pixels.append([])
-        row = pixels[y]
-        if (len(row)) <= x:
-            row.append([])
-        row[x] = color
+        pixels[pixel[1]][pixel[0]] = color
 
     return pixels
