@@ -67,7 +67,7 @@ class Ray:
             return
 
         nearest_point = nearest_dist * self.vector + self.point
-        normal = np.array([0, 0, 0])
+        normal = np.array([0.0, 0.0, 0.0])
         if nearest_prim.kind == KIND_SPHERE:
             normal = nearest_point - nearest_prim.points[0]
             normal = normal * (1 / np.linalg.norm(normal))
@@ -92,7 +92,7 @@ class Ray:
 
         if prim.is_light_source:
             if flag & FLAG_LIGHTS_SKIP:
-                return np.array([0, 0, 0])
+                return np.array([0.0, 0.0, 0.0])
             # if the ray hits a light source we can stop iterating
             return prim.color / (length+1) ** 2
 
@@ -112,17 +112,25 @@ class Ray:
 
             light_vector = light_point - coord
             c = Ray(coord, light_vector).evaluate(scene, MAX_RECURSION_DEPTH, flag=FLAG_LIGHTS_ONLY)
-            c = c * np.abs(np.dot(normal, light_vector) / (np.linalg.norm(light_vector) * np.linalg.norm(normal)))
+            c = c * np.abs(np.dot(normal, light_vector)) / (np.linalg.norm(light_vector) * np.linalg.norm(normal))
             # intensity has to be scaled down relative to the angle
 
             incoming_lightrays.append(c)
 
         # diffuse lightray in direction of normal (heuristic)
-        d = Ray(coord, normal).evaluate(scene, recursion_depth + 1, flag=FLAG_LIGHTS_SKIP)
+        # d = Ray(coord, normal).evaluate(scene, MAX_RECURSION_DEPTH, flag=FLAG_LIGHTS_SKIP)
+        # incoming_lightrays.append(d)
+
+        # diffuse lightray in random direction (introduces noise)
+        delta = np.random.randn(3)
+        delta /= np.linalg.norm(delta)
+        diffuse_vector = normal + delta
+        d = Ray(coord, diffuse_vector).evaluate(scene, MAX_RECURSION_DEPTH - 1, flag=FLAG_LIGHTS_SKIP)
+        d = d * np.abs(np.dot(normal, diffuse_vector)) / (np.linalg.norm(diffuse_vector) * np.linalg.norm(normal))
         incoming_lightrays.append(d)
 
-        result_lights = np.multiply(sum(incoming_lightrays), prim.color)
-        return result_lights / (length+1) ** 2
+        result = np.multiply(sum(incoming_lightrays), prim.color)
+        return result / (length+1) ** 2
         # if prim.shininess == 0.0:
         #    pass
 
