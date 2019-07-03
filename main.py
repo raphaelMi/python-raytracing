@@ -21,6 +21,13 @@ UHD_4K = [3840, 2160]   # as a meme
 width = ULD[0]  # Image width
 height = ULD[1]  # Image height
 cores = 1  # Segments in which the image is divided
+antialiasing = False # Render in double resolution and scale later down with a special algorithm
+
+# Rendering image with double width and scaling it down later
+if antialiasing:
+    width *=2
+    height *=2
+
 pixels_per_block = int(np.ceil((width * height) / cores))  # Rough estimation of pixels per segment
 
 # Debug output
@@ -30,9 +37,9 @@ print("Width: " + str(width))
 print("Height: " + str(height))
 print("Segments: " + str(cores))
 print("Pixels per segment: " + str(pixels_per_block))
+print("Antialiasing: " + str(antialiasing) + (" (Rendering in double resolution and scaling down later)" if antialiasing else ""))
 
 # Prepare the scene
-
 scene = test.test_scene_0
 
 image_render_time = 0
@@ -71,11 +78,13 @@ for i in range(cores):
     print("Rendered block within", str(block_render_time) + "s")
 
     # Display the image
-
     im = PIL.Image.fromarray(rendered_block, mode="RGB")
-    im = im.resize([width//2, height//2], Image.LANCZOS)
+
+    # Scale the image down to the original size if antialiasing is enabled
+    if antialiasing:
+        im = im.resize([width//2, height//2], Image.LANCZOS)
     im.save("render.bmp")
-    im.show(title="render")
+    im.show(title="Scene: "+str(width)+"x"+str(height))
 
 
 print("-- Finished rendering --")
