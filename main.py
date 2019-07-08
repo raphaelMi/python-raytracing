@@ -27,7 +27,7 @@ if __name__ == "__main__": # Make sure the threads don't execute this
     cores = 7 # Segments in which the image is divided
     antialiasing = False # Render in double resolution and scale later down with a special algorithm
     debug_mode = False # Set to true to print additional debug information
-    save_images = True # Set to true to save the rendered blocks and the final image
+    save_images = True # Set to true to save the rendered image
 
     # Rendering image with double width and scaling it down later
     if antialiasing:
@@ -108,6 +108,7 @@ if __name__ == "__main__": # Make sure the threads don't execute this
     plt.figure().canvas.set_window_title("Scene (" + str(width) + " x " + str(height) + (" , Antialiasing" if antialiasing else "" )+ ")")
     render_container = plt.imshow(rendered_image.astype(np.uint8))
     plt.pause(0.001) # Pause shortly so the scene can be rendered
+    im = PIL.Image.fromarray(rendered_image, mode="RGB")
 
     while rendered_blocks != cores: # Wait for the threads to complete
         while not queue.empty():
@@ -126,9 +127,6 @@ if __name__ == "__main__": # Make sure the threads don't execute this
             if antialiasing:
                 im = im.resize([width // 2, height // 2], Image.LANCZOS)
 
-            if save_images:
-                im.save("render_"+str(rendered_blocks)+".bmp")
-
             plt.title("Progress: " + str(float(rendered_blocks/cores)*100) + " %")
             render_container.set_data(im)
             plt.draw()
@@ -141,6 +139,9 @@ if __name__ == "__main__": # Make sure the threads don't execute this
     print("Rendered the scene within " + render_time + " s")
 
     plt.title("Rendered in " + render_time + " s")
+
+    if save_images:
+        im.save("render.bmp")
 
     plt.ioff() # Turn interactive mode off
     plt.show() # The window stays open
