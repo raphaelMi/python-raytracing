@@ -173,7 +173,7 @@ def ray_iterator(camera, resolution, start_row, end_row, start_column, end_colum
     for y in range(end_row - start_row + 1):
         for x in range(resolution[0] - start_column if y == 0 else (end_column + 1 if y == end_row else resolution[0])):
             yield Ray(camera.point,
-                      top_left + x / resolution[0] * right + y /
+                      top_left + (start_column + x if y == 0 else x) / resolution[0] * right + (start_row + y) /
                       resolution[1] * down), (x, y)
 
 
@@ -192,10 +192,17 @@ def render_scene(scene: Scene, **config):
     end_row = config["end_row"]
     end_column = config["end_column"]
 
-    pixels = np.zeros((h, w, 3), dtype=np.uint8)
+    pixels = [] # Don't build the array in advance, because the pixel array can have a weird shape (half columns and such things)
 
     for ray, pixel in ray_iterator(scene.camera, [w, h], start_row, end_row, start_column, end_column):
         color = np.uint8(np.clip(ray.evaluate(scene, 0) * 255, a_min=0, a_max=255))
-        pixels[pixel[1]][pixel[0]] = color
+        x = pixel[0]
+        y = pixel[1]
+        if len(pixels) <= y:
+            pixels.append([])
+        row = pixels[y]
+        if (len(row)) <= x:
+            row.append([])
+        row[x] = color
 
     return pixels
