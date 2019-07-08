@@ -20,19 +20,19 @@ FHD = [1920, 1080]      # Full HD
 UHD = [2560, 1440]      # Ultra High Definition
 UHD_4K = [3840, 2160]   # as a meme
 
-if __name__ == "__main__": # Make sure the threads don't execute this
+if __name__ == "__main__":  # Make sure the threads don't execute this
     # Initialize image data
-    width = ULD[0]  # Image width
-    height = ULD[1]  # Image height
-    cores = 7 # Segments in which the image is divided
-    antialiasing = False # Render in double resolution and scale later down with a special algorithm
-    debug_mode = False # Set to true to print additional debug information
-    save_images = True # Set to true to save the rendered image
+    width = FHD[0]  # Image width
+    height = FHD[1]  # Image height
+    cores = 11  # Segments in which the image is divided
+    antialiasing = True  # Render in double resolution and scale later down with a special algorithm
+    debug_mode = False  # Set to true to print additional debug information
+    save_images = True  # Set to true to save the rendered image
 
     # Rendering image with double width and scaling it down later
     if antialiasing:
-        width *=2
-        height *=2
+        width *= 2
+        height *= 2
 
     pixels_per_block = int(np.ceil((width * height) / cores))  # Rough estimation of pixels per segment
 
@@ -52,9 +52,9 @@ if __name__ == "__main__": # Make sure the threads don't execute this
 
 image_render_time = time.time()
 
-def blockRenderThread(queue,scene,width,height,cores,block,pixels_per_block,start_index,end_index,start_row,end_row,start_column,end_column):
-    # Debug output
 
+def block_render_thread(queue, scene, width, height, cores, block, pixels_per_block, start_index, end_index, start_row, end_row, start_column, end_column):
+    # Debug output
 
     start_time = time.time()
 
@@ -69,7 +69,9 @@ def blockRenderThread(queue,scene,width,height,cores,block,pixels_per_block,star
 
     print("Rendered block "+str(block)+" within", str(block_render_time) + "s")
 
-if __name__ == "__main__": # Make sure the threads don't execute this
+
+if __name__ == "__main__":  # Make sure the threads don't execute this
+
     queue = Queue()
     threads = []
 
@@ -97,15 +99,15 @@ if __name__ == "__main__": # Make sure the threads don't execute this
             print("End row index: " + str(end_row))
             print("End column index: " + str(end_column))
 
-        thread = Process(target=blockRenderThread, args=(queue,scene,width,height,cores,block,pixels_per_block,start_index,end_index,start_row,end_row,start_column,end_column))
+        thread = Process(target=block_render_thread, args=(queue, scene, width, height, cores, block, pixels_per_block, start_index, end_index, start_row, end_row, start_column, end_column))
         threads.append(thread)
         thread.start()
 
-    rendered_blocks = 0 # Counter for rendered blocks
+    rendered_blocks = 0  # Counter for rendered blocks
 
-    plt.ion() # Turn interactive mode on
+    plt.ion()  # Turn interactive mode on
 
-    plt.figure().canvas.set_window_title("Scene (" + str(width) + " x " + str(height) + (" , Antialiasing" if antialiasing else "" )+ ")")
+    plt.figure().canvas.set_window_title("Scene (" + str(width) + " x " + str(height) + (" , Antialiasing" if antialiasing else "") + ")")
     render_container = plt.imshow(rendered_image.astype(np.uint8))
     plt.pause(0.001) # Pause shortly so the scene can be rendered
     im = PIL.Image.fromarray(rendered_image, mode="RGB")
@@ -123,14 +125,14 @@ if __name__ == "__main__": # Make sure the threads don't execute this
             # Display the image
             im = PIL.Image.fromarray(rendered_image, mode="RGB")
 
-            #Scale the image down to the original size if antialiasing is enabled
+            # Scale the image down to the original size if antialiasing is enabled
             if antialiasing:
                 im = im.resize([width // 2, height // 2], Image.LANCZOS)
 
             plt.title("Progress: " + str(float(rendered_blocks/cores)*100) + " %")
             render_container.set_data(im)
             plt.draw()
-            plt.pause(0.001) # Pause shortly so the scene can be rendered
+            plt.pause(0.001)  # Pause shortly so the scene can be rendered
 
             rendered_blocks += 1
     plt.pause(0.2)
