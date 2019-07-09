@@ -84,11 +84,12 @@ class Ray:
             # rays die after exceeding depth of recursion
             return np.array([0.0, 0.0, 0.0])
 
-        try:
-            prim, coord, length, normal = self.intersect(scene)
-        except TypeError:
-            # if ray did not make any intersection, return
+        r = self.intersect(scene)
+
+        if not r:
             return BACKGROUND_COLOR
+
+        prim, coord, length, normal = r
 
         if prim.is_light_source:
             if flag & FLAG_LIGHTS_SKIP:

@@ -22,10 +22,10 @@ UHD_4K = [3840, 2160]   # as a meme
 
 if __name__ == "__main__":  # Make sure the threads don't execute this
     # Initialize image data
-    width = ULD[0]  # Image width
-    height = ULD[1]  # Image height
+    width = LD[0]  # Image width
+    height = LD[1]  # Image height
     cores = 6  # Segments in which the image is divided
-    antialiasing = True  # Render in double resolution and scale later down with a special algorithm
+    antialiasing = False  # Render in double resolution and scale later down with a special algorithm
     debug_mode = False  # Set to true to print additional debug information
     save_images = True  # Set to true to save the rendered image
 
@@ -108,6 +108,7 @@ if __name__ == "__main__":  # Make sure the threads don't execute this
     plt.ion()  # Turn interactive mode on
 
     plt.figure().canvas.set_window_title("Scene (" + str(width) + " x " + str(height) + (" , Antialiasing" if antialiasing else "") + ")")
+    plt.title("Progress: 0.0 %")
     render_container = plt.imshow(rendered_image.astype(np.uint8))
     plt.pause(0.001) # Pause shortly so the scene can be rendered
     im = PIL.Image.fromarray(rendered_image, mode="RGB")
@@ -129,12 +130,13 @@ if __name__ == "__main__":  # Make sure the threads don't execute this
             if antialiasing:
                 im = im.resize([width // 2, height // 2], Image.LANCZOS)
 
+            rendered_blocks += 1
+
             plt.title("Progress: " + str(float(rendered_blocks/cores)*100) + " %")
             plt.imshow(im)
             plt.draw()
             plt.pause(0.001)  # Pause shortly so the scene can be rendered
 
-            rendered_blocks += 1
     plt.pause(0.2)
 
     render_time = str(time.time()-image_render_time)
