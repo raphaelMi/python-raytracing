@@ -22,9 +22,9 @@ UHD_4K = [3840, 2160]   # as a meme
 
 if __name__ == "__main__":  # Make sure the threads don't execute this
     # Initialize image data
-    width = FHD[0]  # Image width
-    height = FHD[1]  # Image height
-    cores = 11  # Segments in which the image is divided
+    width = ULD[0]  # Image width
+    height = ULD[1]  # Image height
+    cores = 6  # Segments in which the image is divided
     antialiasing = True  # Render in double resolution and scale later down with a special algorithm
     debug_mode = False  # Set to true to print additional debug information
     save_images = True  # Set to true to save the rendered image
@@ -130,7 +130,7 @@ if __name__ == "__main__":  # Make sure the threads don't execute this
                 im = im.resize([width // 2, height // 2], Image.LANCZOS)
 
             plt.title("Progress: " + str(float(rendered_blocks/cores)*100) + " %")
-            render_container.set_data(im)
+            plt.imshow(im)
             plt.draw()
             plt.pause(0.001)  # Pause shortly so the scene can be rendered
 
