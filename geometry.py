@@ -24,12 +24,13 @@ class Primitive:
             n = np.cross(self.points[1] - self.points[0], self.points[2] - self.points[0])
             self.normal = n * (1 / np.linalg.norm(n))
 
-        self.color = np.array([255, 255, 255])
+        self.color = np.array([1, 1, 1])
         self.specular = 1
         self.shininess = 0
         self.is_transparent = False
         self.refractive_index = 1
         self.is_light_source = False
+        self.is_reflective = False
 
 
 class Camera:

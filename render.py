@@ -2,7 +2,7 @@
 
 from geometry import *
 
-MAX_RECURSION_DEPTH = 1
+MAX_RECURSION_DEPTH = 2
 BACKGROUND_COLOR = np.array([0.2, 0.2, 0.2])
 # evaluate flags
 FLAG_DEFAULT = 0x00
@@ -100,6 +100,11 @@ class Ray:
         if flag & FLAG_LIGHTS_ONLY:
             return np.array([0.0, 0.0, 0.0])
 
+        if prim.is_reflective:
+            f = Ray(coord, self.vector - 2 * np.dot(self.vector, normal)*normal).evaluate(scene, recursion_depth + 1)
+            f = np.multiply(f, prim.color)
+            return f / (length + 1)**2
+
         incoming_lightrays = []
 
         # diffuse lightrays heading to source
@@ -130,10 +135,6 @@ class Ray:
                 cos_middle_normal = np.abs(np.dot(normal, middle))
                 s = prim.shininess * c * cos_middle_normal ** prim.specular
                 incoming_lightrays.append(s)
-
-        # diffuse lightray in direction of normal (heuristic)
-        # d = Ray(coord, normal).evaluate(scene, MAX_RECURSION_DEPTH, flag=FLAG_LIGHTS_SKIP)
-        # incoming_lightrays.append(d)
 
         # diffuse lightray in random direction (introduces noise)
         delta = np.random.randn(3)
