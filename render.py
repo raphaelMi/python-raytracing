@@ -43,11 +43,12 @@ class Ray:
 
             elif prim.kind == KIND_TRIANGLE:
 
-                v0v1 = prim.points[1] - prim.points[0]
-                v0v2 = prim.points[2] - prim.points[0]
+                v0v1 = prim.points[4]  # point_b - point_a
+                v0v2 = prim.points[5]  # point_c - point_a
+
                 rov0 = self.point - prim.points[0]
 
-                n = np.cross(v0v1, v0v2)
+                n = prim.points[6]  # cross(v0v1,v0v2)
 
                 q = np.cross(rov0, self.vector)
 
@@ -56,7 +57,7 @@ class Ray:
                     d = 1.0 / a
 
                     u = d * np.dot(-q, v0v2)  # first barycentric coordinate
-                    v = d * np.dot(q, v0v1)   # second barycentric coordinate
+                    v = d * np.dot(q, v0v1)  # second barycentric coordinate
                     t = d * np.dot(-n, rov0)  # distance
 
                     if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (
@@ -101,9 +102,9 @@ class Ray:
             return np.array([0.0, 0.0, 0.0])
 
         if prim.is_reflective:
-            f = Ray(coord, self.vector - 2 * np.dot(self.vector, normal)*normal).evaluate(scene, recursion_depth + 1)
+            f = Ray(coord, self.vector - 2 * np.dot(self.vector, normal) * normal).evaluate(scene, recursion_depth + 1)
             f = np.multiply(f, prim.color)
-            return f / (length + 1)**2
+            return f / (length + 1) ** 2
 
         incoming_lightrays = []
 
@@ -112,7 +113,7 @@ class Ray:
             if light_prim.kind == KIND_SPHERE:
                 light_point = light_prim.points[0]
             elif light_prim.kind == KIND_TRIANGLE:
-                light_point = sum(light_prim.points) / 3
+                light_point = light_prim.points[3]
             else:
                 continue
 
@@ -141,7 +142,7 @@ class Ray:
         delta /= np.linalg.norm(delta)
         diffuse_vector = normal + delta
         d = Ray(coord, diffuse_vector).evaluate(scene, MAX_RECURSION_DEPTH - 1, flag=FLAG_LIGHTS_SKIP)
-        d = d * np.abs(np.dot(normal, diffuse_vector)) / (np.linalg.norm(diffuse_vector) * np.linalg.norm(normal))
+        d = d * np.abs(np.dot(normal, diffuse_vector)) / (np.linalg.norm(diffuse_vector))
         incoming_lightrays.append(np.multiply(d, prim.color))
         # incoming_lightrays.append(d)
 
@@ -194,7 +195,7 @@ def render_scene(scene: Scene, **config):
     end_row = config["end_row"]
     end_column = config["end_column"]
 
-    pixels = [] # Don't build the array in advance, because the pixel array can have a weird shape (half columns and such things)
+    pixels = []  # Don't build the array in advance, because the pixel array can have a weird shape (half columns and such things)
 
     for ray, pixel in ray_iterator(scene.camera, [w, h], start_row, end_row, start_column, end_column):
         color = np.uint8(np.clip(ray.evaluate(scene, 0) * 255, a_min=0, a_max=255))

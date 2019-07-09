@@ -20,7 +20,13 @@ class Primitive:
             self.radius = radius
         elif radius == 0:
             self.kind = KIND_TRIANGLE
-            self.points = [np.array(point_a), np.array(point_b), np.array(point_c)]
+            point_a = np.array(point_a)
+            point_b = np.array(point_b)
+            point_c = np.array(point_c)
+            v0v1 = np.array(point_b - point_a)
+            v0v2 = np.array(point_c - point_a)
+            self.points = [point_a, point_b, point_c, sum(np.array([point_a, point_b, point_c])) / 3, v0v1, v0v2,
+                           np.cross(v0v1, v0v2)]
             n = np.cross(self.points[1] - self.points[0], self.points[2] - self.points[0])
             self.normal = n * (1 / np.linalg.norm(n))
 

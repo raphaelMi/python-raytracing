@@ -11,19 +11,19 @@ import test
 import PIL
 from PIL import Image
 
-ULD = [160, 90]         # Ultra Low Definition; resolution mostly for quick testing
-VLD = [320, 180]        # Very Low Definition
-LD = [720, 360]         # Low Definition
-SD = [1024, 576]        # Standard Definition
-HD = [1280, 720]        # High Definition
-FHD = [1920, 1080]      # Full HD
-UHD = [2560, 1440]      # Ultra High Definition
-UHD_4K = [3840, 2160]   # as a meme
+ULD = [160, 90]  # Ultra Low Definition; resolution mostly for quick testing
+VLD = [320, 180]  # Very Low Definition
+LD = [720, 360]  # Low Definition
+SD = [1024, 576]  # Standard Definition
+HD = [1280, 720]  # High Definition
+FHD = [1920, 1080]  # Full HD
+UHD = [2560, 1440]  # Ultra High Definition
+UHD_4K = [3840, 2160]  # as a meme
 
 if __name__ == "__main__":  # Make sure the threads don't execute this
     # Initialize image data
-    width = LD[0]  # Image width
-    height = LD[1]  # Image height
+    width = ULD[0]  # Image width
+    height = ULD[1]  # Image height
     cores = 6  # Segments in which the image is divided
     antialiasing = False  # Render in double resolution and scale later down with a special algorithm
     debug_mode = False  # Set to true to print additional debug information
@@ -43,9 +43,10 @@ if __name__ == "__main__":  # Make sure the threads don't execute this
     print("Height: " + str(height))
     print("Segments: " + str(cores))
     print("Pixels per segment: " + str(pixels_per_block))
-    print("Antialiasing: " + str(antialiasing) + (" (Rendering in double resolution and scaling down later)" if antialiasing else ""))
+    print("Antialiasing: " + str(antialiasing) + (
+        " (Rendering in double resolution and scaling down later)" if antialiasing else ""))
 
-# Prepare the scene
+    # Prepare the scene
     scene = test.test_scene_0
 
     rendered_image = np.zeros((height, width, 3), dtype=np.uint8)
@@ -53,7 +54,8 @@ if __name__ == "__main__":  # Make sure the threads don't execute this
 image_render_time = time.time()
 
 
-def block_render_thread(queue, scene, width, height, cores, block, pixels_per_block, start_index, end_index, start_row, end_row, start_column, end_column):
+def block_render_thread(queue, scene, width, height, cores, block, pixels_per_block, start_index, end_index, start_row,
+                        end_row, start_column, end_column):
     # Debug output
 
     start_time = time.time()
@@ -63,11 +65,11 @@ def block_render_thread(queue, scene, width, height, cores, block, pixels_per_bl
                                   pixels_per_block=pixels_per_block, start_row=start_row, end_row=end_row,
                                   start_column=start_column, end_column=end_column)
 
-    queue.put((rendered_block,start_row,start_column))
+    queue.put((rendered_block, start_row, start_column))
 
     block_render_time = time.time() - start_time
 
-    print("Rendered block "+str(block)+" within", str(block_render_time) + "s")
+    print("Rendered block " + str(block) + " within", str(block_render_time) + "s")
 
 
 if __name__ == "__main__":  # Make sure the threads don't execute this
@@ -75,7 +77,7 @@ if __name__ == "__main__":  # Make sure the threads don't execute this
     queue = Queue()
     threads = []
 
-    print("\nRendering "+str(cores)+" blocks...")
+    print("\nRendering " + str(cores) + " blocks...")
 
     # Rendering - render every block into the image
     for i in range(cores):
@@ -99,7 +101,9 @@ if __name__ == "__main__":  # Make sure the threads don't execute this
             print("End row index: " + str(end_row))
             print("End column index: " + str(end_column))
 
-        thread = Process(target=block_render_thread, args=(queue, scene, width, height, cores, block, pixels_per_block, start_index, end_index, start_row, end_row, start_column, end_column))
+        thread = Process(target=block_render_thread, args=(
+            queue, scene, width, height, cores, block, pixels_per_block, start_index, end_index, start_row, end_row,
+            start_column, end_column))
         threads.append(thread)
         thread.start()
 
@@ -107,13 +111,14 @@ if __name__ == "__main__":  # Make sure the threads don't execute this
 
     plt.ion()  # Turn interactive mode on
 
-    plt.figure().canvas.set_window_title("Scene (" + str(width) + " x " + str(height) + (" , Antialiasing" if antialiasing else "") + ")")
+    plt.figure().canvas.set_window_title(
+        "Scene (" + str(width) + " x " + str(height) + (" , Antialiasing" if antialiasing else "") + ")")
     plt.title("Progress: 0.0 %")
     render_container = plt.imshow(rendered_image.astype(np.uint8))
-    plt.pause(0.001) # Pause shortly so the scene can be rendered
+    plt.pause(0.001)  # Pause shortly so the scene can be rendered
     im = PIL.Image.fromarray(rendered_image, mode="RGB")
 
-    while rendered_blocks != cores: # Wait for the threads to complete
+    while rendered_blocks != cores:  # Wait for the threads to complete
         while not queue.empty():
             data = queue.get()
             rendered_block = data[0]
@@ -132,14 +137,14 @@ if __name__ == "__main__":  # Make sure the threads don't execute this
 
             rendered_blocks += 1
 
-            plt.title("Progress: " + str(float(rendered_blocks/cores)*100) + " %")
+            plt.title("Progress: " + str(float(rendered_blocks / cores) * 100) + " %")
             plt.imshow(im)
             plt.draw()
             plt.pause(0.001)  # Pause shortly so the scene can be rendered
 
     plt.pause(0.2)
 
-    render_time = str(time.time()-image_render_time)
+    render_time = str(time.time() - image_render_time)
     print("Rendered the scene within " + render_time + " s")
 
     plt.title("Rendered in " + render_time + " s")
@@ -147,7 +152,5 @@ if __name__ == "__main__":  # Make sure the threads don't execute this
     if save_images:
         im.save("render.bmp")
 
-    plt.ioff() # Turn interactive mode off
-    plt.show() # The window stays open
-
-
+    plt.ioff()  # Turn interactive mode off
+    plt.show()  # The window stays open
