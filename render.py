@@ -55,9 +55,9 @@ class Ray:
                 if not a == 0:
                     d = 1.0 / a
 
-                    u = d * np.dot(-q, v0v2)
-                    v = d * np.dot(q, v0v1)
-                    t = d * np.dot(-n, rov0)
+                    u = d * np.dot(-q, v0v2)  # first barycentric coordinate
+                    v = d * np.dot(q, v0v1)   # second barycentric coordinate
+                    t = d * np.dot(-n, rov0)  # distance
 
                     if 1.0 >= u >= 0.0 and 1.0 >= v >= 0.0 and (
                             u + v) <= 1.0 and nearest_dist > t > 0 and not np.isclose(t, 0):
