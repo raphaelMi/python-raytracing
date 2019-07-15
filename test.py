@@ -1,4 +1,5 @@
 from geometry import *
+import random
 
 ball = Primitive([5, 0, 0], radius=0.6)
 ball.is_light_source = False
@@ -21,7 +22,23 @@ left_wall.color = np.array([0.1, 0.2, 0.3])
 right_wall = Primitive(point_a=[10, 0, -1], point_b=[0, 10, -1], point_c=[10, 0, 9])
 right_wall.color = np.array([0.2, 0.3, 0.3])
 
-test_scene_0 = Scene({light_src0, light_src1, bottom_wall, left_wall, right_wall, ball})
+bounding_sphere = Primitive([5,0,0], radius=1.25)
+
+sphere1 = Primitive([5,0.75,0],radius=0.1)
+sphere2 = Primitive([5,-0.75,0],radius=0.1)
+sphere3 = Primitive([5,0.75,0.75],radius=0.1)
+sphere4 = Primitive([5,-0.75,0.75],radius=0.1)
+sphere5 = Primitive([5,-0.75,-0.75],radius=0.1)
+sphere6 = Primitive([5,0.75,-0.75],radius=0.1)
+
+sphere1.color = [random.random(),random.random(),random.random()]
+sphere2.color = [random.random(),random.random(),random.random()]
+sphere3.color = [random.random(),random.random(),random.random()]
+sphere4.color = [random.random(),random.random(),random.random()]
+sphere5.color = [random.random(),random.random(),random.random()]
+sphere6.color = [random.random(),random.random(),random.random()]
+
+test_scene_0 = Scene({None:{light_src0, light_src1, bottom_wall, left_wall, right_wall}, bounding_sphere:{ball,sphere1, sphere2, sphere3, sphere4, sphere5, sphere6}})
 
 ball2 = Primitive([8, 0, -0.6], radius=2)
 ball2.is_light_source = False
@@ -29,4 +46,4 @@ ball2.color = np.array([0.3, 0.1, 0.2])
 ball2.specular = 32
 ball2.shininess = 0.5
 
-test_scene_1 = Scene({ball2, light_src0})
+test_scene_1 = Scene({None:{ball2, light_src0}})

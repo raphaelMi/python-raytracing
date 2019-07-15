@@ -1,6 +1,7 @@
 # This module is responsible for rendering a scene.
 
 from geometry import *
+from itertools import chain
 
 MAX_RECURSION_DEPTH = 2
 BACKGROUND_COLOR = np.array([0.2, 0.2, 0.2])
@@ -9,6 +10,8 @@ FLAG_DEFAULT = 0x00
 FLAG_LIGHTS_ONLY = 0x01
 FLAG_LIGHTS_SKIP = 0x02
 
+MAX_DISTANCE = 10 ** 8
+
 
 class Ray:
     # ray has information about
@@ -16,16 +19,14 @@ class Ray:
         self.point = point
         self.vector = vector * (1 / np.linalg.norm(vector))
 
-    def intersect(self, scene):
-        # calculate the earliest intersection with a primitive of the scene
+    def intersect_with_primitives(self, primitives):
+        # we use intersection testing algorithms from
+        # http://www.iquilezles.org/www/articles/intersectors/intersectors.htm
 
-        nearest_dist = 10 ** 8 + 1
-        nearest_prim = 0
+        nearest_dist = MAX_DISTANCE + 1
+        nearest_prim = None
 
-        for prim in scene.primitives:
-            # we use intersection testing algorithms from
-            # http://www.iquilezles.org/www/articles/intersectors/intersectors.htm
-
+        for prim in primitives:
             if prim.kind == KIND_SPHERE:
 
                 origin_center = self.point - prim.points[0]
@@ -64,8 +65,33 @@ class Ray:
                             u + v) <= 1.0 and nearest_dist > t > 0 and not np.isclose(t, 0):
                         nearest_dist = t
                         nearest_prim = prim
-        if nearest_dist > 10 ** 8:  # no intersection
-            return
+
+        if nearest_dist > MAX_DISTANCE:  # no intersection
+            return None
+
+        return nearest_dist, nearest_prim
+
+    def intersect(self, scene):
+        # calculate the earliest intersection with a primitive of the scene
+
+        bounding_primitives = set(filter(lambda key: key is not None, scene.primitives.keys()))
+
+        nearest_bounding_primitive_intersection = self.intersect_with_primitives(bounding_primitives)
+
+        primitives_to_check = set()
+
+        if scene.primitives.get(None):
+            primitives_to_check = primitives_to_check.union(scene.primitives.get(None))
+
+        if nearest_bounding_primitive_intersection:
+            primitives_to_check = primitives_to_check.union(scene.primitives.get(nearest_bounding_primitive_intersection[1]))
+
+        intersection = self.intersect_with_primitives(primitives_to_check)
+
+        if not intersection:
+            return None
+
+        nearest_dist, nearest_prim = intersection
 
         nearest_point = nearest_dist * self.vector + self.point
         normal = np.array([0.0, 0.0, 0.0])

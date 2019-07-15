@@ -1,6 +1,7 @@
 # This module is responsible for structuring the geometry and texture of a scene in a manageable way
 
 import numpy as np
+from itertools import chain
 
 KIND_TRIANGLE = 1
 KIND_SPHERE = 2
@@ -53,18 +54,11 @@ class Scene:
     # container for all primitives and camera
     def __init__(self, primitives):
         self.primitives = primitives
-        self.lights = {prim for prim in self.primitives if prim.is_light_source}
+        self.lights = {prim for prim in chain.from_iterable([frozenset(s) for s in primitives.values()]) if prim.is_light_source}
         self.camera = Camera()
 
     def add_primitive(self, prim):
-        self.primitives.add(prim)
+        self.primitives.update()
         if prim.is_light_source:
             self.lights.add(prim)
 
-
-def read_scene_from_file(file):
-    # reads scene from .obj file
-
-    scene = 0
-
-    return scene
