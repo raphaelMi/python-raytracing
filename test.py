@@ -47,3 +47,17 @@ ball2.specular = 32
 ball2.shininess = 0.5
 
 test_scene_1 = Scene({None:{ball2, light_src0}})
+
+triag0 = Primitive(point_a=[7, -2, -3], point_b=[7, -2, 7], point_c=[2, -2, 2])
+triag0.color = np.array([1, 0, 0])
+triag1 = Primitive(point_a=[7, -2, -3], point_b=[7, -2, 7], point_c=[12, -2, 2])
+triag1.color = np.array([0, 1, 1])
+
+ball5 = Primitive([7, 0, 0], radius=0.6)
+ball5.is_reflective = True
+
+light_src3 = Primitive(point_a=[0, 10, 17], radius=5)
+light_src3.color = np.array([1, 1, 1]) * 50000
+light_src3.is_light_source = True
+
+test_scene_2 = Scene({None:{light_src3, ball5, triag0, triag1}})

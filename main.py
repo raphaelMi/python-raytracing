@@ -22,12 +22,20 @@ UHD_4K = [3840, 2160]  # as a meme
 
 if __name__ == "__main__":  # Make sure the threads don't execute this
     # Initialize image data
-    width = ULD[0]  # Image width
-    height = ULD[1]  # Image height
-    cores = 6  # Segments in which the image is divided
-    antialiasing = False  # Render in double resolution and scale later down with a special algorithm
+    width = int(input("Horizontal resolution: "))  # Image width
+    height = int(input("Vertical resolution: "))  # Image height
+    cores = max(int(input("Threads: "))-1, 1)  # Segments in which the image is divided
+    antialiasing = bool(int(input("Antialiasing (0/1): ")))  # Render in double resolution and scale later down with a special algorithm
     debug_mode = False  # Set to true to print additional debug information
     save_images = True  # Set to true to save the rendered image
+
+    scene_number = int(input("Scene (1/2/3):"))
+    if scene_number == 3:
+        scene = test.test_scene_2
+    elif scene_number == 2:
+        scene = test.test_scene_1
+    else:
+        scene = test.test_scene_0
 
     # Rendering image with double width and scaling it down later
     if antialiasing:
@@ -45,9 +53,7 @@ if __name__ == "__main__":  # Make sure the threads don't execute this
     print("Pixels per segment: " + str(pixels_per_block))
     print("Antialiasing: " + str(antialiasing) + (
         " (Rendering in double resolution and scaling down later)" if antialiasing else ""))
-
-    # Prepare the scene
-    scene = test.test_scene_0
+    print("Rendering scene",scene_number)
 
     rendered_image = np.zeros((height, width, 3), dtype=np.uint8)
 
