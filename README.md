@@ -14,6 +14,7 @@ Features:
 * Custom resolutions and field-of-view
 * Customizable iteration depth for iterative raytracing
 * Custom background colors
+* The rendered scene is saved as a bitmap - `render.bmp`
 
 For testing purposes a small resolution (160x90) should be used. Use as many threads as there are virtual processor cores for optimal rendering speed. Enabling Antialiasing will render 4 times as many pixels, making the computation slower.
 
